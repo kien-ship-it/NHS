@@ -3,6 +3,7 @@
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
 import path from 'path';
+import { cookies } from 'next/headers';
 
 dotenv.config({ path: path.resolve(process.cwd(), '.env.local') });
 
@@ -31,4 +32,25 @@ export function createSessionToken(payload: AuthPayload) {
     expiresIn: '7d', // The token will be valid for 7 days.
   });
   return token;
+}
+
+/**
+ * Verifies the session token from the incoming request's cookies.
+ * This is a server-side utility.
+ * @returns The decoded payload of the JWT if valid.
+ * @throws An error if the token is missing, malformed, or invalid.
+ */
+export async function verifyAuthSession() {
+  const token = (await cookies()).get('session-token')?.value;
+
+  if (!token) {
+    throw new Error('Missing session token');
+  }
+
+  try {
+    const payload = jwt.verify(token, JWT_SECRET_DEFINED) as AuthPayload;
+    return payload;
+  } catch (err) {
+    throw new Error('Invalid session token');
+  }
 }

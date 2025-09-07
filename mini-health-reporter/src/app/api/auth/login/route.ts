@@ -45,7 +45,7 @@ export async function POST(req: NextRequest) {
       email: user.email,
     });
 
-    response.cookies.set('session', token, {
+    response.cookies.set('session-token', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       maxAge: 60 * 60 * 24 * 7, // 7 days in seconds
