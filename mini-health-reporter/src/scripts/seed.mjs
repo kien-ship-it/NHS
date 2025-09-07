@@ -14,8 +14,6 @@ dotenv.config({ path: path.resolve(process.cwd(), '.env.local') });
 
 console.log('🌱 Starting to seed the database...');
 
-// Debug: Log all environment variables
-console.log('Environment variables:', process.env.JWT_SECRET);
 
 // Step 1: Connect to the database
 // We read the path from our .env.local file to know where to build our database.
