@@ -1,0 +1,23 @@
+// src/lib/schema.ts
+
+import { z } from 'zod';
+
+// This schema defines the rules for a valid login request.
+// It ensures that we receive both an email and a password,
+// and that they meet some basic format requirements.
+export const loginUserSchema = z.object({
+  // .email() checks if the string is in a valid email format.
+  email: z.string().email({ message: 'Invalid email address' }),
+
+  // .min(8) ensures the password is at least 8 characters long.
+  // This is a common security practice.
+  password: z
+    .string()
+    .min(8, { message: 'Password must be at least 8 characters long' }),
+});
+
+// We can infer the TypeScript type directly from our Zod schema.
+// This is a powerful feature that ensures our frontend and backend
+// types always stay in sync. If we change the schema, the type updates
+// automatically.
+export type LoginUserDto = z.infer<typeof loginUserSchema>;
