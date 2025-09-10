@@ -36,7 +36,7 @@ export async function POST(req: NextRequest) {
     }
 
     // 5. If everything is correct, create the session token.
-    const token = createSessionToken({ userId: user.id });
+    const token = await createSessionToken({ userId: user.id });
 
     // 6. Return a successful response with the user's data (excluding the password!)
     // and set the session cookie.
@@ -64,11 +64,10 @@ export async function POST(req: NextRequest) {
         { status: 400 } // 400 Bad Request
       );
     }
-
-    // For any other unexpected errors, return a generic server error.
-    console.error(error); // Log the actual error for debugging
+    // For unexpected errors, we return a generic error message.
+    // We don't want to expose internal details to the client.
     return NextResponse.json(
-      { message: 'An unexpected error occurred.' },
+      { message: 'Internal server error' },
       { status: 500 }
     );
   }

@@ -1,11 +1,7 @@
 // src/lib/auth.ts
 
-import jwt from 'jsonwebtoken';
-import dotenv from 'dotenv';
-import path from 'path';
+import * as jose from 'jose';
 import { cookies } from 'next/headers';
-
-dotenv.config({ path: path.resolve(process.cwd(), '.env.local') });
 
 // This is our "secret key" for signing the JWTs. It's crucial that this
 // is kept secret. If someone gets this key, they can create fake tokens.
@@ -15,23 +11,25 @@ if (!JWT_SECRET) {
   throw new Error('JWT_SECRET environment variable is not set.');
 }
 
-// At this point, we know JWT_SECRET is defined
-const JWT_SECRET_DEFINED = JWT_SECRET as string;
+// Convert the secret to a format usable by jose (Uint8Array)
+const JWT_SECRET_KEY = new TextEncoder().encode(JWT_SECRET);
 
 // This is the "payload" of our token. It's the information we store inside
 // the JWT. We're keeping it simple and only storing the user's ID.
 export interface AuthPayload {
   userId: string;
+  [key: string]: any; // Added index signature to allow for additional properties
 }
 
 // This function creates the JWT.
-export function createSessionToken(payload: AuthPayload) {
-  // We use the `jsonwebtoken` library to "sign" the token. This creates
-  // the secure signature using our secret key.
-  const token = jwt.sign(payload, JWT_SECRET_DEFINED, {
-    expiresIn: '7d', // The token will be valid for 7 days.
-  });
-  return token;
+export async function createSessionToken(payload: AuthPayload) {
+  // We use the `jose` library to create and sign the token.
+  // This creates the secure signature using our secret key.
+  const jwt = new jose.SignJWT(payload)
+    .setProtectedHeader({ alg: 'HS256' })
+    .setIssuedAt()
+    .setExpirationTime('7d'); // Token expires in 7 days
+  return await jwt.sign(JWT_SECRET_KEY);
 }
 
 /**
@@ -48,8 +46,8 @@ export async function verifyAuthSession() {
   }
 
   try {
-    const payload = jwt.verify(token, JWT_SECRET_DEFINED) as AuthPayload;
-    return payload;
+    const { payload } = await jose.jwtVerify(token, JWT_SECRET_KEY, { algorithms: ['HS256'] });
+    return payload as unknown as AuthPayload;
   } catch (err) {
     throw new Error('Invalid session token');
   }

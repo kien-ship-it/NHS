@@ -35,7 +35,9 @@ export default function LoginForm() {
 
       // If the response is OK (status 200-299), login was successful
       if (response.ok) {
-        // Redirect the user to the protected dashboard page
+        // Refresh the router to ensure the new cookie is sent to the server
+        router.refresh();
+        // Then, push to the reports page
         router.push('/reports');
       } else {
         // If there was an error, show a message to the user
