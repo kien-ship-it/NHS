@@ -54,3 +54,21 @@ export async function verifyAuthSession() {
     throw new Error('Invalid session token');
   }
 }
+
+/**
+ * A safe wrapper around verifyAuthSession that returns the session payload
+ * or null if the session is not valid. It does not throw an error.
+ * This is ideal for use in Server Components to check for an active session.
+ * @returns The decoded payload of the JWT if valid, otherwise null.
+ */
+export async function getSession(): Promise<AuthPayload | null> {
+  try {
+    // Attempt to verify the session. If it works, return the payload.
+    const payload = await verifyAuthSession();
+    return payload;
+  } catch (err) {
+    // If verifyAuthSession throws any error (missing, invalid, etc.),
+    // we catch it and simply return null.
+    return null;
+  }
+}
